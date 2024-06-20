@@ -1,3 +1,13 @@
-# SURF 2024
+# Comparing the Human Heath Effects of Ubran Heat Islands and Climate Change
 
-Work with advisor Prof. Hannah Druckenmiller to quantify and compare the health effects of temperature changes from urban heat islands and climate change.
+## Abstract
+
+todo; With advisor Prof. Hannah Druckenmiller, this study aims to quantify and compare the health effects of temperature changes from urban heat islands and climate change.
+
+## Reproducibility
+
+todo
+
+## Requirements
+
+todo
