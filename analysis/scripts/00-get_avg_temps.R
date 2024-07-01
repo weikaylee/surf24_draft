@@ -2,7 +2,7 @@
 library(raster)
 
 # consts
-years <- c(2003:2020)
+years <- c(2013:2020)
 
 base_paths <- list(
   min = file.path("analysis", "data", "la_atmin"),
@@ -46,12 +46,12 @@ for (year in yearly_data) {
     min_matches <- regmatches(basename(min_file), gregexpr("\\d", basename(min_file)))
     max_matches <- regmatches(basename(max_file), gregexpr("\\d", basename(max_file)))
     if (!identical(min_matches, max_matches)) {
-      stop("Files do not match")
+      stop("Files do not match") # no doy 299 in 2013 min (will have one less raster for avg temps)
     }
     
     # calculate and save avg raster
-    min_raster <- setMinMax(raster(min_file))
-    max_raster <- setMinMax(raster(max_file))
+    min_raster <- raster(min_file)
+    max_raster <- raster(max_file)
     avg_raster <- (min_raster + max_raster) / 2
     
     # save raster
@@ -63,6 +63,11 @@ for (year in yearly_data) {
 min_test <- raster(file.path("analysis", "data", "la_atmin", "LA_ATMIN_2003", "LA_ATMIN_2003_DOY001.tif"))
 max_test <- raster(file.path("analysis", "data", "la_atmax", "LA_ATMAX_2003", "LA_ATMAX_2003_DOY001.tif"))
 avg_test <- raster(file.path("analysis", "processed", "la_atavg", "LA_ATAVG_2003", "LA_ATAVG_2003_DOY001.tif"))
-print(paste("(min, max) of minimum temp:", min_test@values))
-print(paste("(min, max) of maximum temp:", max_test@values))
-print(paste("(min, max) of average temp:", avg_test@values))
+
+min_test <- setMinMax(min_test)
+max_test <- setMinMax(max_test)
+avg_test <- setMinMax(avg_test)
+
+print(min_test)
+print(max_test)
+print(avg_test)

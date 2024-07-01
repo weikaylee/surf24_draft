@@ -5,7 +5,7 @@ library(terra)
 # consts
 years <- c(2003:2004)
 temp_bins <- c(-Inf, 0:40, Inf)
-bin_labels <- c("-Inf_0", paste0(seq(0, 39), "_", seq(1, 40)), "40_Inf")
+bin_labels <- c("Inf_0", paste0(seq(0, 39), "_", seq(1, 40)), "40_Inf")
 
 base_paths <- list(
   min = file.path("analysis", "data", "la_atmin"),
@@ -34,7 +34,7 @@ get_temp_bins <- function(pixel_vec) {
 # layer of the raster brick represents a different bin and where each pixel 
 # value represents the number of days in that bin at that location
 for (year in names(yearly_data)) {
-  folder_path <- file.path("analysis", "processed", year, "daily_temp_bins") # should these be created beforehand..? (eg in run.do?? / master script that runs entire analysis?)
+  folder_path <- file.path("analysis", "processed", "daily_temp_bins", year) # should these be created beforehand..? (eg in run.do?? / master script that runs entire analysis?)
   if (!dir.exists(folder_path)) {
     dir.create(folder_path, recursive=TRUE)
   }
@@ -66,7 +66,7 @@ test_stack <- stack(test_files, quick=TRUE)
 test_brick <- brick("analysis/processed/2003/daily_temp_bins/LA_DAILY_TEMP_BINS_MIN_2003.tif")
 
 # create 4 by 4 layout, for 16 total plots at a time
-par(mfrow = c(4, 4))
+par(mfrow = c(3, 3))
 
 # get distribution of pixel vals for first 16 days, see which values have highest freq
 for (i in 1:9) {
@@ -74,5 +74,10 @@ for (i in 1:9) {
 }
 
 # get distribution of bin counts, verify that they match above graphs
-plot(test_brick)
+hist(test_brick)
 
+plot(sum(test_brick))
+
+
+# look into prism, noaa, epa
+# just get itorial temp for entire plave (no need to actually spplit things into citiies)
