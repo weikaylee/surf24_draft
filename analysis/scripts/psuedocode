@@ -1,0 +1,39 @@
+DAILY TEMP BINS
+for each year: 
+  for each file in year: 
+    determine max and min temp for each pixel / area, by either iterating through each pixel in all files OR by finding some function...can also create own helper function here 
+    from min and max, get avg temp 
+  store data in single-layer raster 
+
+create helper function that takes in a raster: iterate through each pixel in raster, and count how many pixels fall into each bin. return dataframe? 
+  do this for each of the three rasters created above: max, min, avg temps
+
+DIURNAL RANGE BINS
+using above rasters, get diurnal range bin (just do simple raster math lol: subtract max and min rasters) 
+
+HEAT WAVE DAY COUNTS
+for each year: 
+  for each pixel in corresponding min raster: 
+  iterate through each pixel. get city (??) using crs??? and then get historical temp for that city. then do simple if statement to count num heatwaves each year. 
+  
+or...
+
+construct max, min, avg rasters: 
+intialize a dictionary of rasters for min, max, and avg, mapping year to raster
+for each year: 
+  for each pixel in raster (get dimensions prior to this, check if all the same): 
+    initalize min and max
+    for each file in year: 
+      update min and max 
+    store min and max in respective rasters
+    calculate avg, store in respective raster 
+  
+construct temp bins for each raster (assuming we want one temp bin for each pixel location): 
+create data frame 
+    
+
+
+  
+
+  
+    
