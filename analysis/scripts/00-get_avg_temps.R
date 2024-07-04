@@ -2,7 +2,7 @@
 library(raster)
 
 # consts
-years <- c(2013:2020)
+years <- c(2014:2020)
 
 base_paths <- list(
   min = file.path("analysis", "data", "la_atmin"),
@@ -28,6 +28,20 @@ for (year in yearly_data) {
   }
 }
 
+# function to find file in file_list that matches doy of file_to_match
+# (search file_list linearly in case of large mismatches between dirs)
+get_matching_file <- function(file_list, file_to_match) {
+  doy_to_match <- regmatches(basename(file_to_match), gregexpr("DOY(//d+)", basename(file_to_match)))
+  for (i in 1:length(file_list)) {
+    file <- file_list[i]
+    file_doy <- regmatches(basename(file), gregexpr("DOY(//d+)", basename(file)))
+    if (identical(doy_to_match, file_doy)) {
+      return(file)
+    }
+  }
+  return(NULL)
+}
+
 # get and store avg raster
 for (year in yearly_data) {
   min_files <- list.files(year[["MIN"]], full.names=TRUE)
@@ -35,19 +49,16 @@ for (year in yearly_data) {
   avg_path <- year[["AVG"]]
   
   print(paste0("Writing to ", avg_path, "..."))
-  for (i in seq_along(min_files)) {
+  for (i in 1:length(min_files)) { 
     min_file = min_files[i]
-    max_file = max_files[i]
+    max_file = get_matching_file(max_files, min_file) 
+    
+    if (is.null(max_file)) {
+      next
+    }
     
     filename <- sub("ATMIN", "ATAVG", basename(min_file))
     filepath <- file.path(avg_path, filename)
-    
-    # verify that the files match (are from the same date)
-    min_matches <- regmatches(basename(min_file), gregexpr("\\d", basename(min_file)))
-    max_matches <- regmatches(basename(max_file), gregexpr("\\d", basename(max_file)))
-    if (!identical(min_matches, max_matches)) {
-      stop("Files do not match") # no doy 299 in 2013 min (will have one less raster for avg temps)
-    }
     
     # calculate and save avg raster
     min_raster <- raster(min_file)
@@ -60,9 +71,9 @@ for (year in yearly_data) {
 }
 
 # check if calculation worked 
-min_test <- raster(file.path("analysis", "data", "la_atmin", "LA_ATMIN_2003", "LA_ATMIN_2003_DOY001.tif"))
-max_test <- raster(file.path("analysis", "data", "la_atmax", "LA_ATMAX_2003", "LA_ATMAX_2003_DOY001.tif"))
-avg_test <- raster(file.path("analysis", "processed", "la_atavg", "LA_ATAVG_2003", "LA_ATAVG_2003_DOY001.tif"))
+min_test <- raster(file.path("analysis", "data", "la_atmin", "LA_ATMIN_2004", "LA_ATMIN_2004_DOY001.tif"))
+max_test <- raster(file.path("analysis", "data", "la_atmax", "LA_ATMAX_2004", "LA_ATMAX_2004_DOY001.tif"))
+avg_test <- raster(file.path("analysis", "processed", "la_atavg", "LA_ATAVG_2004", "LA_ATAVG_2004_DOY001.tif"))
 
 min_test <- setMinMax(min_test)
 max_test <- setMinMax(max_test)
