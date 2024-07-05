@@ -2,7 +2,7 @@
 library(raster)
 
 # consts
-years <- c(2014:2020)
+years <- c(2003:2020)
 
 base_paths <- list(
   min = file.path("analysis", "data", "la_atmin"),
@@ -70,7 +70,24 @@ for (year in yearly_data) {
   }
 }
 
-# check if calculation worked 
+# verify that calculation worked 
+# first, check that we have the expected number of files 
+# (minimum of max temp files and min temp files) 
+for (year in names(yearly_data)) {
+  year_paths <- yearly_data[[year]]
+  min_files <- list.files(year_paths[["MIN"]])
+  print(length(min_files))
+  max_files <- list.files(year_paths[["MAX"]])
+  avg_files <- list.files(year_paths[["AVG"]])
+  num_files <- min(length(min_files), length(max_files))
+  actual_files <- length(avg_files)
+  
+  if (num_files != actual_files) {
+    stop(paste("Number of files do not match in", year))
+  }
+}
+
+# check that raster info is consistent
 min_test <- raster(file.path("analysis", "data", "la_atmin", "LA_ATMIN_2004", "LA_ATMIN_2004_DOY001.tif"))
 max_test <- raster(file.path("analysis", "data", "la_atmax", "LA_ATMAX_2004", "LA_ATMAX_2004_DOY001.tif"))
 avg_test <- raster(file.path("analysis", "processed", "la_atavg", "LA_ATAVG_2004", "LA_ATAVG_2004_DOY001.tif"))
@@ -82,3 +99,4 @@ avg_test <- setMinMax(avg_test)
 print(min_test)
 print(max_test)
 print(avg_test)
+
