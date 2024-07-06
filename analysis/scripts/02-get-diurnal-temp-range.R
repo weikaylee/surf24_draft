@@ -91,13 +91,13 @@ for (year in names(yearly_data)) {
 # check that raster info is consistent
 min_test <- raster(file.path("analysis", "data", "la_atmin", "LA_ATMIN_2004", "LA_ATMIN_2004_DOY001.tif"))
 max_test <- raster(file.path("analysis", "data", "la_atmax", "LA_ATMAX_2004", "LA_ATMAX_2004_DOY001.tif"))
-avg_test <- raster(file.path("analysis", "processed", "la_dtrng", "LA_DTRNG_2004", "LA_DTRNG_2004_DOY001.tif"))
+rng_test <- raster(file.path("analysis", "processed", "la_dtrng", "LA_DTRNG_2004", "LA_DTRNG_2004_DOY001.tif"))
 
 min_test <- setMinMax(min_test)
 max_test <- setMinMax(max_test)
-avg_test <- setMinMax(avg_test)
+rng_test <- setMinMax(rng_test)
 
 print(min_test)
 print(max_test)
-print(avg_test)
+print(rng_test)
 
