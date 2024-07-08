@@ -93,17 +93,18 @@ test_stack <- rast(test_files)
 test_brick <- rast(file.path(base_paths[["output"]], "2003", "LA_DAILY_TEMP_BINS_MIN_2003.tif"))
 
 # create layout
-nrows = 4
-ncols = 4
+nrows <- 4
+ncols <- 4
+offset <- 10
 ncells_half = (nrows * ncols) / 2
 par(mfcol = c(nrows, ncols), mar=c(2, 2, 2, 2))
 
 # plot distr of pixel values 
 for (i in 1:ncells_half) {
-  hist(test_stack[[i]], xlab="Value (C)", ylab="Frequency")
+  hist(test_stack[[i + offset]], xlab="Value (C)", ylab="Frequency")
 }
 
 # plot distr of bin counts 
 for (i in 1:ncells_half) {
-  hist(test_brick[[i]], xlab="Value (C)", ylab="Frequency")
+  hist(test_brick[[i + offset]], xlab="Value (C)", ylab="Frequency")
 }
