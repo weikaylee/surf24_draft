@@ -91,7 +91,8 @@ for (year in names(yearly_data)) {
 test_files <- list.files(file.path("analysis", "data", "la_atmin", "LA_ATMIN_2003"), full.names=TRUE)
 test_stack <- rast(test_files)
 test_brick <- rast(file.path(base_paths[["output"]], "2003", "LA_DAILY_TEMP_BINS_MIN_2003.tif"))
-
+plot(test_brick)
+plot(test_stack)
 # create layout
 nrows <- 4
 ncols <- 4

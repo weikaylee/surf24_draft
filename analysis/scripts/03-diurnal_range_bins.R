@@ -94,6 +94,9 @@ test_brick <- rast(
   )
 )
 names(test_brick) <- paste("LA_DTRNG_BINS_2003", bin_labels, sep="_")
+plot(test_stack)
+plot(test_brick)
+
 
 # create layout
 nrows <- 4

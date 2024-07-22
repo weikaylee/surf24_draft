@@ -73,10 +73,12 @@ main <- function(var_data_by_year, zipcodes_processed, zipcode_colnames, layer_c
       collapsed_measures_df <- rbind(collapsed_measures_df, zipcode_df)
     }
     
-    # save, just in case
-    csv_file_path <- file.path(output_path, paste0("LA_zipcode_measures_", year, ".csv"))
-    message("Saving progress to ", csv_file_path, "...")
-    write.csv(collapsed_measures_df, csv_file_path, row.names=FALSE)
+    # # save progress, just in case
+    # csv_file_path <- file.path(output_path, paste0("LA_zipcode_measures_", year, ".csv"))
+    # message("Saving progress to ", csv_file_path, "...")
+    # write.csv(collapsed_measures_df, csv_file_path, row.names=FALSE)
+    
+    # to save separate csv for each year, just save zipcode_df
   }
   
   return(collapsed_measures_df)
@@ -107,4 +109,33 @@ csv_file_path <- file.path(output_path, paste0("LA_zipcode_measures_all_years", 
 message("Saving final collapsed measures to ", csv_file_path, "...")
 write.csv(collapsed_measures_df, csv_file_path, row.names=FALSE)
 
-# TODO, try plotting with zipcode geos! eeeeeeeee
+
+# # plot heatwave counts for each zipcode, observe trends across years
+# measures_to_plot <- collapsed_measures_df
+# merge_zipcodes <- function(subset_df, to_merge_df) {
+#   return(left_join(subset_df, to_merge_df, by="ZIPCODE"))
+# }
+# merged_df <- measures_to_plot %>% group_by("YEAR") %>% group_modify(~ merge_zipcodes(.x, zipcodes_processed))
+# 
+# par(mfrow = c(2, 2), mar = c(2, 2, 2, 2))
+# group_modify(~ plot(.x[c("HEATWAVE_CNT", "geometry")]))
+# 
+# 
+# idxs <- seq(from=1, to=18, by=5)
+# par(mfrow=c(length(idxs) / 2, length(idxs) / 2))
+# measures_by_year <- split(measures_to_plot, measures_to_plot$YEAR)
+# for (idx in idxs) {
+#   # merge, get geos ugh 
+#   to_plot <- left_join(measures_by_year[[idx]], zipcodes_processed, by="ZIPCODE")
+#   to_plot <- to_plot[c("HEATWAVE_CNT", "geometry")]
+#   # plot(to_plot)
+#   
+#   plot <- ggplot(data = to_plot, aes(x = long, y = lat, group = group, fill = continuous_var)) +
+#     geom_polygon()
+# 
+#   print(plot)
+#   
+#   # print(measures_by_year[[idx]][c(HEATWAVE_CNT, "geometry")])
+#   # plot(measures_by_year[[idx]][c("HEATWAVE_CNT", "geometry")])
+# }
+# 
