@@ -2,6 +2,7 @@
 library(terra)
 library(sf)
 library(tidyverse)
+library(raster)
 
 raw_data_path <- file.path("analysis", "data")
 zipcodes_raw <- file.path(raw_data_path,
@@ -35,6 +36,9 @@ suppressMessages({
   }
 })
 
+# save final zipcodes
 zipcodes_processed <- setdiff(zipcodes_merged, dropped_zipcodes)
+out <- file.path("analysis", "processed", "collapsed_measures", "zipcodes_processed.shp")
+shapefile(as_Spatial(zipcodes_processed), out)
 # plot(raw_rast)
 # plot(zipcodes_processed, add=TRUE)
