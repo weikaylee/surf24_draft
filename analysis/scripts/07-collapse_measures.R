@@ -3,6 +3,7 @@ source(file.path("analysis", "scripts", "06-clean_zipcode_data.R"))
 message("Getting data to collapse...")
 source(file.path("analysis", "scripts", "07-get_all_processed_data.R"))
 
+library(gridExtra)
 
 # get col names based on layers for each raster var
 generate_colnames <- function(files, bin_labels, layer_names, not_bins) {
@@ -109,33 +110,32 @@ csv_file_path <- file.path(output_path, paste0("LA_zipcode_measures_all_years", 
 message("Saving final collapsed measures to ", csv_file_path, "...")
 write.csv(collapsed_measures_df, csv_file_path, row.names=FALSE)
 
+# TODO, standardize per 100k? 
 
-# # plot heatwave counts for each zipcode, observe trends across years
-# measures_to_plot <- collapsed_measures_df
-# merge_zipcodes <- function(subset_df, to_merge_df) {
-#   return(left_join(subset_df, to_merge_df, by="ZIPCODE"))
-# }
-# merged_df <- measures_to_plot %>% group_by("YEAR") %>% group_modify(~ merge_zipcodes(.x, zipcodes_processed))
-# 
-# par(mfrow = c(2, 2), mar = c(2, 2, 2, 2))
-# group_modify(~ plot(.x[c("HEATWAVE_CNT", "geometry")]))
-# 
-# 
-# idxs <- seq(from=1, to=18, by=5)
-# par(mfrow=c(length(idxs) / 2, length(idxs) / 2))
-# measures_by_year <- split(measures_to_plot, measures_to_plot$YEAR)
-# for (idx in idxs) {
-#   # merge, get geos ugh 
-#   to_plot <- left_join(measures_by_year[[idx]], zipcodes_processed, by="ZIPCODE")
-#   to_plot <- to_plot[c("HEATWAVE_CNT", "geometry")]
-#   # plot(to_plot)
-#   
-#   plot <- ggplot(data = to_plot, aes(x = long, y = lat, group = group, fill = continuous_var)) +
-#     geom_polygon()
-# 
-#   print(plot)
-#   
-#   # print(measures_by_year[[idx]][c(HEATWAVE_CNT, "geometry")])
-#   # plot(measures_by_year[[idx]][c("HEATWAVE_CNT", "geometry")])
-# }
-# 
+# plot counts; observe trends
+# add geos to collapsed measures
+test = data.frame(collapsed_measures_df)
+test$geometry = pull(zipcodes_processed, "geometry") # extract col as vector, so it repeats 
+spat_polys <- as_Spatial(test[, "geometry"])
+row.names(spat_polys) <- row.names(test)
+spat_df <- SpatialPolygonsDataFrame(spat_polys, test)
+
+# splot dataframe by year
+df_list <- split(spat_df, spat_df$YEAR)
+
+# create list of spplot objects
+sp_plots <- lapply(names(df_list), function(year) {
+  spplot(df_list[[year]], zcol = "HEATWAVE_CNT",
+         main = paste("Heatwave Counts in", year))
+})
+
+# get list of grobs
+library(ggplotify)
+
+grob_plots <- lapply(sp_plots, function(plot) {
+  as.grob(plot)
+})
+
+# combine plots using lattice layout
+grid.arrange(grob_plots, ncol=2)
+do.call(grid.arrange, c(grob_plots, ncol = 2))
