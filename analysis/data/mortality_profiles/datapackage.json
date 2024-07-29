@@ -1,0 +1,340 @@
+{
+  "accrual_periodicity": "annually",
+  "additional_limitations": "",
+  "citation": "__Final Data:__\r\n\r\nCalifornia Department of Public Health. Death Statistical Master File (Static), 1989-2013. Compiled by Center for Health Statistics and Informatics.\r\n\r\nCalifornia Department of Public Health. California Comprehensive Master Death File (Static), 2014-2021. Compiled by Center for Health Statistics and Informatics.",
+  "contact_email": "opendata@cdph.ca.gov",
+  "data_collection_tool": "- California Electronic Death Registration System (CA-EDRS)",
+  "data_license": "Terms of Use",
+  "de_identification_method": "In accordance with the [California Health and Human Services Data De-Identification Guidelines](https://chhsdata.github.io/dataplaybook/documents/CHHS-DDG-V1.0-092316.pdf), counts less than 11 have been suppressed to protect privacy, and additional suppression has been applied to complementary cells to prevent the inference of the values of suppressed cells. An Annotation_Code of 1 denotes non-zero counts less than 11 suppressed due to small numbers, and an Annotation_Code of 2 denotes a cell suppressed as a complementary cell.\r\n\r\nSuppression is applied to complementary cells across all stratifications.",
+  "description": "This dataset contains counts of deaths for California residents by ZIP Code based on information entered on death certificates. Final counts are derived from static data and include out-of-state deaths of California residents. The data tables include deaths of residents of California by ZIP Code of residence (by residence). The data are reported as totals, as well as stratified by age and gender. Deaths due to all causes (ALL) and selected underlying cause of death categories are provided. See temporal coverage for more information on which combinations are available for which years.\r\n\r\nThe cause of death categories are based solely on the underlying cause of death as coded by the International Classification of Diseases. The underlying cause of death is defined by the World Health Organization (WHO) as \"the disease or injury which initiated the train of events leading directly to death, or the circumstances of the accident or violence which produced the fatal injury.\" It is a single value assigned to each death based on the details as entered on the death certificate. When more than one cause is listed, the order in which they are listed can affect which cause is coded as the underlying cause. This means that similar events could be coded with different underlying causes of death depending on variations in how they were entered. Consequently, while underlying cause of death provides a convenient comparison between cause of death categories, it may not capture the full impact of each cause of death as it does not always take into account all conditions contributing to the death.",
+  "geo_coverage": "California",
+  "geographic_granularity": "zip code",
+  "keywords": [
+    "CDPH",
+    "CHSI",
+    "Center for Health Statistics and Informatics",
+    "Public Health",
+    "cause of death",
+    "death",
+    "female",
+    "gender",
+    "male",
+    "mortality",
+    "sex",
+    "vital statistics",
+    "zip",
+    "zip code"
+  ],
+  "limitations": "Limitations",
+  "name": "death-profiles-by-zip-code",
+  "program_web_page": "https://www.cdph.ca.gov/Programs/CHSI/Pages/Data-and-Statistics-.aspx",
+  "related_resources": "",
+  "resources": [
+    {
+      "description": "This data table reports the annual number of deaths of California residents by the ZIP Code of residence regardless of where the death occurred (by residence).\r\n\r\nThe cause of death categories are based solely on the underlying cause of death as coded by the International Classification of Diseases. The underlying cause of death is defined by the World Health Organization (WHO) as \"the disease or injury which initiated the train of events leading directly to death, or the circumstances of the accident or violence which produced the fatal injury.\" It is a single value assigned to each death based on the details as entered on the death certificate. When more than one cause is listed, the order in which they are listed can affect which cause is coded as the underlying cause. This means that similar events could be coded with different underlying causes of death depending on variations in how they were entered. Consequently, while underlying cause of death provides a convenient comparison between cause of death categories, it may not capture the full impact of each cause of death as it does not always take into account all conditions contributing to the death.\r\n\r\nCause of death categories for years 1999 and later are based on tenth revision of International Classification of Diseases (ICD-10) codes. Comparable categories are provided for years 1979 through 1998 based on ninth revision (ICD-9) codes. For more information on the comparability of cause of death classification between ICD revisions see [Comparability of Cause-of-death Between ICD Revisions](https://www.cdc.gov/nchs/nvss/mortality/comparability_icd.htm).",
+      "format": "CSV",
+      "hash": "27a8318cab52a410339ca99ec025a9ea",
+      "name": "2019-2021-final-deaths-by-year-by-zip-code",
+      "path": "2019-2021-final-deaths-by-year-by-zip-code.csv",
+      "schema": {
+        "fields": [
+          {
+            "name": "Year",
+            "type": "string"
+          },
+          {
+            "name": "ZIP_Code",
+            "type": "string"
+          },
+          {
+            "name": "Geography_Type",
+            "type": "string"
+          },
+          {
+            "name": "Strata",
+            "type": "string"
+          },
+          {
+            "name": "Strata_Name",
+            "type": "string"
+          },
+          {
+            "name": "Cause",
+            "type": "string"
+          },
+          {
+            "name": "Cause_Desc",
+            "type": "string"
+          },
+          {
+            "name": "ICD_Revision",
+            "type": "string"
+          },
+          {
+            "name": "Count",
+            "type": "string"
+          },
+          {
+            "name": "Annotation_Code",
+            "type": "string"
+          },
+          {
+            "name": "Annotation_Desc",
+            "type": "string"
+          },
+          {
+            "name": "Data_Revision_Date",
+            "type": "string"
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "https://data.chhs.ca.gov/dataset/590aeff1-b022-4240-9a46-3fe90bf3ad91/resource/d4711b8e-6eb4-417c-91f5-ee075558adbe/download/20221206_deaths_final_2019-2021__zip_year_sup.csv",
+          "title": "2019-2021 Final Deaths by Year by ZIP Code"
+        }
+      ],
+      "title": "2019-2021 Final Deaths by Year by ZIP Code"
+    },
+    {
+      "description": "This data table reports the annual number of deaths of California residents by the ZIP Code of residence regardless of where the death occurred (by residence).\r\n\r\nThe cause of death categories are based solely on the underlying cause of death as coded by the International Classification of Diseases. The underlying cause of death is defined by the World Health Organization (WHO) as \"the disease or injury which initiated the train of events leading directly to death, or the circumstances of the accident or violence which produced the fatal injury.\" It is a single value assigned to each death based on the details as entered on the death certificate. When more than one cause is listed, the order in which they are listed can affect which cause is coded as the underlying cause. This means that similar events could be coded with different underlying causes of death depending on variations in how they were entered. Consequently, while underlying cause of death provides a convenient comparison between cause of death categories, it may not capture the full impact of each cause of death as it does not always take into account all conditions contributing to the death.",
+      "format": "CSV",
+      "hash": "16d448c4ac41aff64f694caa0e99ae18",
+      "name": "2009-2018-final-deaths-by-year-by-zip-code",
+      "path": "2009-2018-final-deaths-by-year-by-zip-code.csv",
+      "schema": {
+        "fields": [
+          {
+            "name": "Year",
+            "type": "string"
+          },
+          {
+            "name": "ZIP_Code",
+            "type": "string"
+          },
+          {
+            "name": "Geography_Type",
+            "type": "string"
+          },
+          {
+            "name": "Strata",
+            "type": "string"
+          },
+          {
+            "name": "Strata_Name",
+            "type": "string"
+          },
+          {
+            "name": "Cause",
+            "type": "string"
+          },
+          {
+            "name": "Cause_Desc",
+            "type": "string"
+          },
+          {
+            "name": "ICD_Revision",
+            "type": "string"
+          },
+          {
+            "name": "Count",
+            "type": "string"
+          },
+          {
+            "name": "Annotation_Code",
+            "type": "string"
+          },
+          {
+            "name": "Annotation_Desc",
+            "type": "string"
+          },
+          {
+            "name": "Data_Revision_Date",
+            "type": "string"
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "https://data.chhs.ca.gov/dataset/590aeff1-b022-4240-9a46-3fe90bf3ad91/resource/b77943d0-ba90-4ec5-ad6b-2c363c7c419a/download/20221206_deaths_final_2009-2018__zip_year_sup.csv",
+          "title": "2009-2018 Final Deaths by Year by ZIP Code"
+        }
+      ],
+      "title": "2009-2018 Final Deaths by Year by ZIP Code"
+    },
+    {
+      "description": "This data table reports the annual number of deaths of California residents by the ZIP Code of residence regardless of where the death occurred (by residence).\r\n\r\nThe cause of death categories are based solely on the underlying cause of death as coded by the International Classification of Diseases. The underlying cause of death is defined by the World Health Organization (WHO) as \"the disease or injury which initiated the train of events leading directly to death, or the circumstances of the accident or violence which produced the fatal injury.\" It is a single value assigned to each death based on the details as entered on the death certificate. When more than one cause is listed, the order in which they are listed can affect which cause is coded as the underlying cause. This means that similar events could be coded with different underlying causes of death depending on variations in how they were entered. Consequently, while underlying cause of death provides a convenient comparison between cause of death categories, it may not capture the full impact of each cause of death as it does not always take into account all conditions contributing to the death.\r\n\r\nCause of death categories for years 1999 and later are based on tenth revision of International Classification of Diseases (ICD-10) codes. Comparable categories are provided for years 1979 through 1998 based on ninth revision (ICD-9) codes. For more information on the comparability of cause of death classification between ICD revisions see [Comparability of Cause-of-death Between ICD Revisions](https://www.cdc.gov/nchs/nvss/mortality/comparability_icd.htm).",
+      "format": "CSV",
+      "hash": "6e5b81d41d71ca7f580d230ef0c1860a",
+      "name": "1999-2008-final-deaths-by-year-by-zip-code",
+      "path": "1999-2008-final-deaths-by-year-by-zip-code.csv",
+      "schema": {
+        "fields": [
+          {
+            "name": "Year",
+            "type": "string"
+          },
+          {
+            "name": "ZIP_Code",
+            "type": "string"
+          },
+          {
+            "name": "Geography_Type",
+            "type": "string"
+          },
+          {
+            "name": "Strata",
+            "type": "string"
+          },
+          {
+            "name": "Strata_Name",
+            "type": "string"
+          },
+          {
+            "name": "Cause",
+            "type": "string"
+          },
+          {
+            "name": "Cause_Desc",
+            "type": "string"
+          },
+          {
+            "name": "ICD_Revision",
+            "type": "string"
+          },
+          {
+            "name": "Count",
+            "type": "string"
+          },
+          {
+            "name": "Annotation_Code",
+            "type": "string"
+          },
+          {
+            "name": "Annotation_Desc",
+            "type": "string"
+          },
+          {
+            "name": "Data_Revision_Date",
+            "type": "string"
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "https://data.chhs.ca.gov/dataset/590aeff1-b022-4240-9a46-3fe90bf3ad91/resource/63524ddb-5b46-473c-82f8-6b400c569099/download/20221206_deaths_final_1999-2008__zip_year_sup.csv",
+          "title": "1999-2008 Final Deaths by Year by ZIP Code"
+        }
+      ],
+      "title": "1999-2008 Final Deaths by Year by ZIP Code"
+    },
+    {
+      "description": "This data table reports the annual number of deaths of California residents by the ZIP Code of residence regardless of where the death occurred (by residence).\r\n\r\nThe cause of death categories are based solely on the underlying cause of death as coded by the International Classification of Diseases. The underlying cause of death is defined by the World Health Organization (WHO) as \"the disease or injury which initiated the train of events leading directly to death, or the circumstances of the accident or violence which produced the fatal injury.\" It is a single value assigned to each death based on the details as entered on the death certificate. When more than one cause is listed, the order in which they are listed can affect which cause is coded as the underlying cause. This means that similar events could be coded with different underlying causes of death depending on variations in how they were entered. Consequently, while underlying cause of death provides a convenient comparison between cause of death categories, it may not capture the full impact of each cause of death as it does not always take into account all conditions contributing to the death.\r\n\r\nCause of death categories for years 1999 and later are based on tenth revision of International Classification of Diseases (ICD-10) codes. Comparable categories are provided for years 1979 through 1998 based on ninth revision (ICD-9) codes. For more information on the comparability of cause of death classification between ICD revisions see [Comparability of Cause-of-death Between ICD Revisions](https://www.cdc.gov/nchs/nvss/mortality/comparability_icd.htm).",
+      "format": "CSV",
+      "hash": "70b180ca3d48b61df23e6259f3e91c52",
+      "name": "1989-1998-final-deaths-by-year-by-zip-code",
+      "path": "1989-1998-final-deaths-by-year-by-zip-code.csv",
+      "schema": {
+        "fields": [
+          {
+            "name": "Year",
+            "type": "string"
+          },
+          {
+            "name": "ZIP_Code",
+            "type": "string"
+          },
+          {
+            "name": "Geography_Type",
+            "type": "string"
+          },
+          {
+            "name": "Strata",
+            "type": "string"
+          },
+          {
+            "name": "Strata_Name",
+            "type": "string"
+          },
+          {
+            "name": "Cause",
+            "type": "string"
+          },
+          {
+            "name": "Cause_Desc",
+            "type": "string"
+          },
+          {
+            "name": "ICD_Revision",
+            "type": "string"
+          },
+          {
+            "name": "Count",
+            "type": "string"
+          },
+          {
+            "name": "Annotation_Code",
+            "type": "string"
+          },
+          {
+            "name": "Annotation_Desc",
+            "type": "string"
+          },
+          {
+            "name": "Data_Revision_Date",
+            "type": "string"
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "https://data.chhs.ca.gov/dataset/590aeff1-b022-4240-9a46-3fe90bf3ad91/resource/dec10f0d-df14-40f2-8877-2d4f3d4e0c1b/download/20221206_deaths_final_1989-1998__zip_year_sup.csv",
+          "title": "1989-1998 Final Deaths by Year by ZIP Code"
+        }
+      ],
+      "title": "1989-1998 Final Deaths by Year by ZIP Code"
+    },
+    {
+      "format": "CSV",
+      "hash": "df7b197e7e4d5751bc70554db72becad",
+      "name": "data-dictionary-deaths-by-zip-code",
+      "path": "data-dictionary-deaths-by-zip-code.csv",
+      "schema": {
+        "fields": [
+          {
+            "name": "Field Title",
+            "type": "string"
+          },
+          {
+            "name": "Field Name",
+            "type": "string"
+          },
+          {
+            "name": "Data Type",
+            "type": "string"
+          },
+          {
+            "name": "Description",
+            "type": "string"
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "https://data.chhs.ca.gov/dataset/590aeff1-b022-4240-9a46-3fe90bf3ad91/resource/5d97dfdf-b133-461a-8f8f-5f951759a994/download/data-dictionary-deaths-by-zip-code.csv",
+          "title": "Data Dictionary - Deaths by ZIP Code"
+        }
+      ],
+      "title": "Data Dictionary - Deaths by ZIP Code"
+    }
+  ],
+  "secondary_sources": "",
+  "sources": [
+    {
+      "name": "California Department of Public Health, Center for Health Statistics and Informatics, Vital Statistics Branch",
+      "web": "https://www.cdph.ca.gov/Programs/CHSI/Pages/Data-Applications.aspx"
+    }
+  ],
+  "temporal_coverage": "__Final Data Tables:__\r\n\r\n- 1989-2021\r\n\t- Total Population by Cause\r\n\t- Age (only for all causes)\r\n\t- Gender (only for all causes)",
+  "title": "Death Profiles by ZIP Code"
+}
