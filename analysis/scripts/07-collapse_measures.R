@@ -1,9 +1,10 @@
-message("Cleaning zipcode shps...")
-source(file.path("analysis", "scripts", "06-clean_zipcode_data.R"))
-message("Getting data to collapse...")
-source(file.path("analysis", "scripts", "07-get_all_processed_data.R"))
-
+library(conflicted)
 library(gridExtra)
+
+message("Cleaning zipcode shps...")
+source(file.path("analysis", "scripts", "05-clean_zipcode_data.R"))
+message("Getting data to collapse...")
+source(file.path("analysis", "scripts", "06-get_all_processed_data.R"))
 
 # get col names based on layers for each raster var
 generate_colnames <- function(files, bin_labels, layer_names, not_bins) {
@@ -137,5 +138,4 @@ grob_plots <- lapply(sp_plots, function(plot) {
 })
 
 # combine plots using lattice layout
-grid.arrange(grob_plots, ncol=2)
-do.call(grid.arrange, c(grob_plots, ncol = 2))
+do.call(grid.arrange, c(grob_plots))
