@@ -2,10 +2,11 @@
 library(terra)
 library(sf)
 library(tidyverse)
-
+library(sp)
+library(gridExtra)
 
 # load er data
-er_path <- file.path("analysis", "processed", "health_data", "er_health_data_counts.csv")
+er_path <- file.path("analysis", "processed", "health_data", "er_health_data_rates.csv")
 er_df <- read.csv(er_path)
 
 
@@ -87,7 +88,6 @@ plot(zip_centroids$centroid, add=TRUE)
 
 
 # create catchment groups for each year, mapping focal zip to missing zips 
-years <- c(2005:2020)
 catchments = list() 
 for (year in years) {
   yearly_zips <- yearly_zip_data[[as.character(year)]]
@@ -121,7 +121,6 @@ for (year in years) {
 
 
 # then, use pop data to compute weights 
-years <- c(2005:2020) 
 years <- lapply(years, toString)
 tolerance <- 1e-5
 weights <- list()
@@ -158,7 +157,7 @@ for (year in years) {
 
 
 # compute new rates using weights 
-years <- c(2005:2020) 
+years <- c(2005:2005) 
 years <- lapply(years, toString)
 er_df_full <- data.frame(er_df)
 data_to_add <- list()
@@ -174,6 +173,7 @@ for (year in years) {
     # compute group's rate for each var / col 
     zip_weight <- yearly_weights[[zip]][[zip]]
     group_rate <- zip_er_rates / zip_weight 
+    print(group_rate)
     
     catch_weights <- yearly_weights[[zip]]
     # for each catch zip, multiply group rate by zip's weight 
@@ -202,3 +202,44 @@ row.names(er_df_sorted) <- NULL
 # save final er data 
 save_path <- file.path("analysis", "processed", "health_data", "er_rates_catchment.csv")
 write.csv(er_df_sorted, save_path, row.names = FALSE)
+
+
+
+# plot a few catchments for one yr, to double check 
+par(mfrow= c(3,1))
+catchments_2020 <- catchments[["2020"]][1:3]
+for (catch in catchments_2020) {
+  # get geos
+  geos_to_plot <- subset(zipcodes, ZIPCODE %in% catch)
+  plot(geos_to_plot)
+}
+
+
+# plot some data across zipcodes, across years 
+yrs_to_plot <- seq(2005, 2020, by = 5)
+
+# create spatialdf
+to_plot = er_df_sorted
+geos = pull(zipcodes, "geometry") %>% rep(time=16) # extract col as vector, so it repeats 
+spat_polys <- as_Spatial(geos)
+row.names(spat_polys) <- row.names(to_plot)
+spat_df <- SpatialPolygonsDataFrame(spat_polys, to_plot)
+
+# split df by year
+df_list <- split(spat_df, spat_df$YEAR)
+
+# # get data for 5 years 
+# df_to_plot <- list(
+#   "2005" = df_list[["2005"]], 
+#   "2010" = df_list[["2010"]], 
+#   "2015" = df_list[["2015"]], 
+#   "2020" = df_list[["2020"]]
+# )
+
+# create list of plots 
+plots <- lapply(names(df_list), function(year) {
+  spplot(df_list[[year]], zcol = "EDvisits",
+         main = paste(year, "ED Visits"))
+})
+
+do.call(grid.arrange, plots)
