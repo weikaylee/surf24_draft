@@ -6,7 +6,7 @@ library(sp)
 library(gridExtra)
 
 # load er data
-er_path <- file.path("analysis", "processed", "health_data", "er_health_data_rates.csv")
+er_path <- file.path("analysis", "processed", "health_data", "er_health_data_counts.csv")
 er_df <- read.csv(er_path)
 
 
@@ -56,6 +56,8 @@ er_df <- subset(er_df, ZIPCODE %in% pop_df$ZIPCODE)
 
 # for each year, get curr zipcodes and missing zipcodes 
 years <- c(2005:2020)
+years <- lapply(years, toString)
+
 yearly_zip_data <- list()
 for (year in years) {
   # get er data for that year only 
@@ -90,43 +92,55 @@ plot(zip_centroids$centroid, add=TRUE)
 # create catchment groups for each year, mapping focal zip to missing zips 
 catchments = list() 
 for (year in years) {
-  yearly_zips <- yearly_zip_data[[as.character(year)]]
+  yearly_zips <- yearly_zip_data[[year]]
   curr_zips <- yearly_zips$curr_zips
   missing_zips <- yearly_zips$missing_zips
   missing_zips_centroids <- subset(zip_centroids, ZIPCODE %in% missing_zips)
   curr_zips_centroids <- subset(zip_centroids, ZIPCODE %in% curr_zips)
   
-  # iterate through each missing zipcode, get closest nonmissing zipcode by centroid
+  # get closest nonmissing zipcode by centroid
   nearest <- st_nearest_feature(missing_zips_centroids$centroid, curr_zips_centroids$centroid)
 
   # get corresponding zipcodes
   nearest_zips <- curr_zips_centroids[nearest, ]$ZIPCODE
-
+  
   # add to catchment group
+  count = 0
   yearly_catchments <- list()
   for (i in 1:length(nearest_zips)) {
     focal_zip = nearest_zips[[i]]
     catchment_zip = missing_zips[[i]]
     if (!focal_zip %in% names(yearly_catchments)) {
-      yearly_catchments[[focal_zip]] <- c(catchment_zip)
+      yearly_catchments[[toString(focal_zip)]] <- c(toString(catchment_zip))
+      count = count + 1
     }
     else {
-      yearly_catchments[[focal_zip]] <- c(yearly_catchments[[focal_zip]], catchment_zip)
+      yearly_catchments[[toString(focal_zip)]] <- c(yearly_catchments[[toString(focal_zip)]], toString(catchment_zip))
+      count = count + 1
+    }
+  }
+  
+  # get focal zipcodes wo group 
+  if (TRUE %in% (!curr_zips %in% nearest_zips)) {
+    zips_wo_group <- curr_zips[!curr_zips %in% nearest_zips]
+    for (i in 1:length(zips_wo_group)) {
+      yearly_catchments[[toString(zips_wo_group[[i]])]] <- list()
     }
   }
   
   # add to main catchment group 
-  catchments[[as.character(year)]] <- yearly_catchments
+  catchments[[year]] <- yearly_catchments
 }
 
 
-# then, use pop data to compute weights 
-years <- lapply(years, toString)
-tolerance <- 1e-5
-weights <- list()
+
+# compute new rate for each catchment group 
+new_rates <- list()
+idx <- 1
 for (year in years) {
+  message("Getting rates for ", year)
   yearly_catchment <- catchments[[year]]
-  yearly_weights <- list()
+  yearly_df <- subset(er_df, YEAR == year)
   for (zip in names(yearly_catchment)) {
     # get pop data from pop_df
     pop_data <- subset(pop_df, ZIPCODE %in% c(zip, yearly_catchment[[zip]]))
@@ -134,107 +148,63 @@ for (year in years) {
     # get tot pop in group 
     tot_pop <- pop_data["TOTPOP"] %>% lapply(as.numeric) %>% unlist %>% sum
 
-    # get weights 
-    catch_weights <- list()
-    zip_pop <- (pop_data %>% filter(ZIPCODE == zip) %>% pull) %>% as.numeric
-    catch_weights[[zip]] <- zip_pop / tot_pop
+    # get rates for focal zip 
+    zip_er <- subset(yearly_df, ZIPCODE == zip)
+    zip_er_counts <- zip_er[, 3:length(colnames(zip_er))]
+    
+    # get new rate for catchment group 
+    rate <- (zip_er_counts / tot_pop) * 1e5 
+    
+    # add new rates for each zipcode to list 
+    rate <- cbind(ZIPCODE = zip, rate)
+    rate <- cbind(YEAR = year, rate)
+    new_rates[[idx]] <- rate
+    idx = idx + 1
+
     for (catch_zip in yearly_catchment[[zip]]) {
-      zip_pop <- pop_data %>% filter(ZIPCODE == catch_zip) %>% pull %>% as.numeric
-      weight <-  zip_pop / tot_pop
-      catch_weights[[catch_zip]] = weight
-    }
-    
-    # check that weights sum to one 
-    sum_weights <- catch_weights %>% unlist %>% sum
-    if (abs(sum_weights - 1) > tolerance) {
-      message("Sum of temp weights is not 1. Actual sum is ", sum_weights, "for group", zip)
-    }
-
-    yearly_weights[[zip]] <- catch_weights
-  }
-  weights[[year]] <- yearly_weights
-}
-
-
-# compute new rates using weights 
-years <- c(2005:2005) 
-years <- lapply(years, toString)
-er_df_full <- data.frame(er_df)
-data_to_add <- list()
-idx <- 1
-for (year in years) {
-  yearly_weights <- weights[[year]]
-  yearly_er <- subset(er_df, YEAR == year)
-  for (zip in names(yearly_weights)) {
-    # get er data for focal zip 
-    zip_er <- subset(yearly_er, ZIPCODE == zip)
-    zip_er_rates <- zip_er[, 3:length(colnames(zip_er))]
-    
-    # compute group's rate for each var / col 
-    zip_weight <- yearly_weights[[zip]][[zip]]
-    group_rate <- zip_er_rates / zip_weight 
-    print(group_rate)
-    
-    catch_weights <- yearly_weights[[zip]]
-    # for each catch zip, multiply group rate by zip's weight 
-    for (catch_zip in names(catch_weights)) {
-      if (catch_zip != zip) {
-        zip_rate <- group_rate * catch_weights[[catch_zip]]
-        zip_rate <- cbind(ZIPCODE = catch_zip, zip_rate)
-        zip_rate <- cbind(YEAR = year, zip_rate)
-
-        data_to_add[[idx]] <- zip_rate
-        idx = idx + 1
-      }
+      rate$ZIPCODE = catch_zip
+      # zip_rate <- cbind(ZIPCODE = catch_zip, rate)
+      # zip_rate <- cbind(YEAR = year, zip_rate)
+      new_rates[[idx]] <- rate
+      idx = idx + 1
     }
   }
 }
 
-# bind rows to df 
-data_to_add_df <- do.call(rbind, data_to_add) 
-row.names(data_to_add_df) <- NULL
-er_df_full <- rbind(er_df_full, data_to_add_df)
+# convert new rates to df 
+new_rates_df <- do.call(rbind, new_rates) 
+row.names(new_rates_df) <- NULL
 
 # sort by year and zipcode 
-er_df_sorted <- er_df_full[order(er_df_full$YEAR, er_df_full$ZIPCODE), ]
-row.names(er_df_sorted) <- NULL
+new_rates_df_sorted <- new_rates_df[order(new_rates_df$YEAR, new_rates_df$ZIPCODE), ]
+row.names(new_rates_df_sorted) <- NULL
 
 # save final er data 
-save_path <- file.path("analysis", "processed", "health_data", "er_rates_catchment.csv")
-write.csv(er_df_sorted, save_path, row.names = FALSE)
+save_path <- file.path("analysis", "processed", "health_data", "er_rates_catchment_correct_final.csv")
+write.csv(new_rates_df_sorted, save_path, row.names = FALSE)
 
 
-
-# plot a few catchments for one yr, to double check 
-par(mfrow= c(3,1))
-catchments_2020 <- catchments[["2020"]][1:3]
-for (catch in catchments_2020) {
-  # get geos
-  geos_to_plot <- subset(zipcodes, ZIPCODE %in% catch)
-  plot(geos_to_plot)
-}
+# 
+# # plot a few catchments for one yr, to double check 
+# par(mfrow= c(3,1))
+# catchments_2020 <- catchments[["2020"]][1:3]
+# for (catch in catchments_2020) {
+#   # get geos
+#   geos_to_plot <- subset(zipcodes, ZIPCODE %in% catch)
+#   plot(geos_to_plot)
+# }
 
 
 # plot some data across zipcodes, across years 
-yrs_to_plot <- seq(2005, 2020, by = 5)
-
 # create spatialdf
-to_plot = er_df_sorted
+df <- read.csv(file.path("analysis", "processed", "health_data", "er_rates_catchment_correct_final.csv")) %>% data.frame
 geos = pull(zipcodes, "geometry") %>% rep(time=16) # extract col as vector, so it repeats 
 spat_polys <- as_Spatial(geos)
-row.names(spat_polys) <- row.names(to_plot)
-spat_df <- SpatialPolygonsDataFrame(spat_polys, to_plot)
+row.names(spat_polys) <- row.names(df)
+spat_df <- SpatialPolygonsDataFrame(spat_polys, df)
 
 # split df by year
 df_list <- split(spat_df, spat_df$YEAR)
-
-# # get data for 5 years 
-# df_to_plot <- list(
-#   "2005" = df_list[["2005"]], 
-#   "2010" = df_list[["2010"]], 
-#   "2015" = df_list[["2015"]], 
-#   "2020" = df_list[["2020"]]
-# )
 
 # create list of plots 
 plots <- lapply(names(df_list), function(year) {
@@ -242,4 +212,4 @@ plots <- lapply(names(df_list), function(year) {
          main = paste(year, "ED Visits"))
 })
 
-do.call(grid.arrange, plots)
+store <- do.call(grid.arrange, plots)
