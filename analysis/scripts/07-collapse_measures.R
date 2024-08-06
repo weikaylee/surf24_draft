@@ -111,13 +111,20 @@ csv_file_path <- file.path(output_path, paste0("LA_zipcode_measures_all_years", 
 message("Saving final collapsed measures to ", csv_file_path, "...")
 write.csv(collapsed_measures_df, csv_file_path, row.names=FALSE)
 
-# TODO, standardize per 100k? 
 
 # plot counts; observe trends
 # add geos to collapsed measures
+
+# open up csv
+library(dplyr)
+library(gridExtra)
+library(sf)
+library(sp)
+collapsed_measures_df <- read.csv(file.path("analysis", "processed", "collapsed_measures", "LA_zipcode_measures_all_years.csv"))
 test = data.frame(collapsed_measures_df)
 test$geometry = pull(zipcodes_processed, "geometry") # extract col as vector, so it repeats 
-spat_polys <- as_Spatial(test[, "geometry"])
+spat_polys <- as_Spatial(test$geometry)
+
 row.names(spat_polys) <- row.names(test)
 spat_df <- SpatialPolygonsDataFrame(spat_polys, test)
 
@@ -127,15 +134,15 @@ df_list <- split(spat_df, spat_df$YEAR)
 # create list of spplot objects
 sp_plots <- lapply(names(df_list), function(year) {
   spplot(df_list[[year]], zcol = "HEATWAVE_CNT",
-         main = paste("Heatwave Counts in", year))
+         main = paste(year, "Heatwave Counts"))
 })
 
 # get list of grobs
-library(ggplotify)
-
-grob_plots <- lapply(sp_plots, function(plot) {
-  as.grob(plot)
-})
+# library(ggplotify)
+# 
+# grob_plots <- lapply(sp_plots, function(plot) {
+#   as.grob(plot)
+# })
 
 # combine plots using lattice layout
-do.call(grid.arrange, c(grob_plots))
+test <- do.call(grid.arrange, sp_plots)
