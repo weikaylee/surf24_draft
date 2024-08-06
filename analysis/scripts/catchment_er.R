@@ -50,7 +50,7 @@ geos_only <- zipcodes[, "geometry"] %>% st_transform(6423) # la crs: https://eps
 plot(zipcodes)
 plot(geos_only)
 
-# for er data, filter out zipcodes wo pop data (removes 1 -- 90095, aka ucla) 
+# for er data, filter out zipcodes wo pop data (removes one zipcode: 90095, aka ucla) 
 er_df <- subset(er_df, ZIPCODE %in% pop_df$ZIPCODE)
 
 
@@ -171,28 +171,20 @@ for (year in years) {
   }
 }
 
+
 # convert new rates to df 
 new_rates_df <- do.call(rbind, new_rates) 
 row.names(new_rates_df) <- NULL
+
 
 # sort by year and zipcode 
 new_rates_df_sorted <- new_rates_df[order(new_rates_df$YEAR, new_rates_df$ZIPCODE), ]
 row.names(new_rates_df_sorted) <- NULL
 
+
 # save final er data 
 save_path <- file.path("analysis", "processed", "health_data", "er_rates_catchment_correct_final.csv")
 write.csv(new_rates_df_sorted, save_path, row.names = FALSE)
-
-
-# 
-# # plot a few catchments for one yr, to double check 
-# par(mfrow= c(3,1))
-# catchments_2020 <- catchments[["2020"]][1:3]
-# for (catch in catchments_2020) {
-#   # get geos
-#   geos_to_plot <- subset(zipcodes, ZIPCODE %in% catch)
-#   plot(geos_to_plot)
-# }
 
 
 # plot some data across zipcodes, across years 
@@ -212,4 +204,4 @@ plots <- lapply(names(df_list), function(year) {
          main = paste(year, "ED Visits"))
 })
 
-store <- do.call(grid.arrange, plots)
+store <- do.call(grid.arrange, plots) # if nothing shows up, call "store" in console
