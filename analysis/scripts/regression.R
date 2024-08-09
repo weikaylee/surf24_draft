@@ -1,6 +1,7 @@
 # load libraries
 library(lfe)
 library(stringr)
+library(ggplot2)
 
 # get panel data (just annual measures + mortality for now) 
 panel_path <- file.path("analysis", "processed", "merged", "measures_mortality.csv")
@@ -43,16 +44,55 @@ three_deg <- create_binned_df(3, panel)
 five_deg <- create_binned_df(5, panel)
 seven_deg <- create_binned_df(7, panel)
 nine_deg <- create_binned_df(9, panel)
+ten_deg <- create_binned_df(10, panel)
 twelve_deg <- create_binned_df(12, panel)
 
 # models!
 
+# run model on each type of bin, then all temp bins, then all bins for each deg and plot to compar each! 
+three_avg_formula <- as.formula(paste("Total ~", paste(names(three_deg)[grepl("AVG", names(three_deg))], collapse="+"), "| ZIPCODE + YEAR"))
+five_avg_formula <- as.formula(paste("Total ~", paste(names(five_deg)[grepl("AVG", names(five_deg))], collapse="+"), "| ZIPCODE + YEAR"))
+seven_avg_formula <- as.formula(paste("Total ~", paste(names(seven_deg)[grepl("AVG", names(seven_deg))], collapse="+"), "| ZIPCODE + YEAR"))
+nine_avg_formula <- as.formula(paste("Total ~", paste(names(nine_deg)[grepl("AVG", names(nine_deg))], collapse="+"), "| ZIPCODE + YEAR"))
+ten_avg_formula <- as.formula(paste("Total ~", paste(names(ten_deg)[grepl("AVG", names(ten_deg))], collapse="+"), "| ZIPCODE + YEAR"))
+twelve_avg_formula <- as.formula(paste("Total ~", paste(names(twelve_deg)[grepl("AVG", names(twelve_deg))], collapse="+"), "| ZIPCODE + YEAR"))
 
+three_avg <- felm(three_avg_formula, data = three_deg)
+five_avg <- felm(five_avg_formula, data = five_deg)
+seven_avg <- felm(seven_avg_formula, data = seven_deg)
+nine_avg <- felm(nine_avg_formula, data = nine_deg)
+ten_avg <- felm(ten_avg_formula, data = ten_deg)
+twelve_avg <- felm(twelve_avg_formula, data = twelve_deg)
 
+get_bin_names <- function(curr_names) {
+  bin_names <- c()
+  for (name in curr_names) {
+    first_num <- sub(".*_(.*)_.*", "\\1", name)
+    second_num <- sub(".*_(.*).*", "\\1", name)
+    if (first_num == "Inf") {
+      bin_names <- c(bin_names, paste0("<", second_num))
+    }
+    else if (second_num == "Inf") {
+      bin_names <- c(bin_names, paste0("\u2265", first_num))
+    }
+    else {
+      bin_names <- c(bin_names, paste0("[", first_num, ",", second_num, ")"))
+    }
+  }
+  return(bin_names)
+}
 
+# PLOTTING!
+# make df from felm output of stuff we want to plot 
+three_df <- data.frame(bin=get_bin_names(names(three_avg$beta[, 1])), coeff=three_avg$beta[, 1], se=three_avg$se)
+three_df$bin <- factor(three_df$bin, levels=three_df$bin)
+row.names(three_df) <- NULL
 
-
-
+ggplot(na.omit(three_df), aes(x=bin, y=coeff, group=1)) + 
+  geom_ribbon(aes(ymin = coeff - se, ymax = coeff + se), fill = "grey70") + 
+  geom_errorbar(aes(ymin=coeff-se, ymax=coeff+se), width=.1) + 
+  geom_line() + 
+  geom_point(shape=21, fill="white") 
 
 
 three_deg_temp_formula <- as.formula(paste("Total ~", paste(names(three_deg)[grepl("DAILY|DIURNAL", names(three_deg))], collapse="+"), "| ZIPCODE + YEAR"))
