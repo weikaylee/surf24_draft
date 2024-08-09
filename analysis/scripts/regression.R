@@ -6,36 +6,72 @@ library(stringr)
 panel_path <- file.path("analysis", "processed", "merged", "measures_mortality.csv")
 panel <- read.csv(panel_path)
 
-# merge bins into five degree bins 
-panel_bins <- panel[, grepl("DAILY|DIURNAL", names(panel))]
-panel_final <- panel[, !colnames(panel) %in% colnames(panel_bins)] # get remaining cols
 
-# get indices 
-num_idxs <- 2 * ((length(names(panel[, grepl("AVG", names(panel))])) - 2) / 5) - 2 # aka 14; get num idxs needed for sixteen total 5-degree bins per binned group (excluding first and last groups, which have inf; these are defined manually below)
-root_idxs <- c(1, 6)
-for (i in 2:num_idxs) {
-  if (i %% 2 == 0) {
-    root_idxs <- c(root_idxs, root_idxs[i] + 1)
+# funcs to create dfs with degree bins 
+create_binned_df <- function(num_degrees, df_full) {
+  # create copy of df bins, to modify
+  df_bins <- df_full[, grepl("DAILY|DIURNAL", names(df_full))]
+  df_not_bins <- df_full[, !colnames(df_full) %in% colnames(df_bins)]
+  df_final <- data.frame(df_not_bins) 
+  
+  # get relevant idxs...do some math... 
+  num_idxs <- 2 * ((length(names(df_full[, grepl("AVG", names(df_full))]))) %/% num_degrees) - 2 
+  root_idxs <- c(1, 1 + num_degrees)
+  for (i in 2:num_idxs) {
+    if (i %% 2 == 0) {
+      root_idxs <- c(root_idxs, root_idxs[i] + 1)
+    }
+    else {
+      root_idxs <- c(root_idxs, root_idxs[i] + (num_degrees - 1))
+    }
   }
-  else {
-    root_idxs <- c(root_idxs, root_idxs[i] + 4)
+  root_idxs <- c(root_idxs, 42)
+  idxs <- c(root_idxs, root_idxs + 42, root_idxs + 2 * 42, root_idxs + 3 * 42)
+  
+  # sum relevant rows, and join to df_final
+  for (i in seq(1, length(idxs) - 1, by=2)) {
+    idx <- idxs[i]
+    idx_1 <- idxs[i + 1]
+    bins <- paste(sub(".*_(.*)_.*", "\\1", names(df_bins)[idx]), sub(".*_(.*).*", "\\1", names(df_bins)[idx_1]), sep="_")
+    colname <- paste(sub("^([^_]*_[^_]*_[^_]*)_.*","\\1", names(df_bins)[idx]), bins, sep="_")
+    df_final[, colname] <- c(df_bins[, idx:idx_1] %>% rowSums)
   }
-}
-root_idxs <- c(root_idxs, 42)
-
-idxs <- c(root_idxs, root_idxs + 42, root_idxs + 2 * 42, root_idxs + 3 * 42)
-for (i in seq(1, length(idxs) - 1, by=2)) {
-  idx <- idxs[i]
-  idx_1 <- idxs[i + 1]
-  bins <- paste(sub(".*_(.*)_.*", "\\1", names(panel_bins)[idx]), sub(".*_(.*).*", "\\1", names(panel_bins)[idx_1]), sep="_")
-  colname <- paste(sub("^([^_]*_[^_]*_[^_]*)_.*","\\1", names(panel_bins)[idx]), bins, sep="_")
-  panel_final[, colname] <- c(panel_bins[, idx:idx_1] %>% rowSums)
+  return(df_final)
 }
 
-# run models, with multiple fixed effects!
-temp_colnames <- names(panel_final)[grepl("HEATWAVE", names(panel_final))]
-vars <- paste(temp_colnames, collapse = " + ")
-print(vars)
+three_deg <- create_binned_df(3, panel)
+five_deg <- create_binned_df(5, panel)
+seven_deg <- create_binned_df(7, panel)
+nine_deg <- create_binned_df(9, panel)
+twelve_deg <- create_binned_df(12, panel)
+
+# models!
+
+
+
+
+
+
+
+
+
+three_deg_temp_formula <- as.formula(paste("Total ~", paste(names(three_deg)[grepl("DAILY|DIURNAL", names(three_deg))], collapse="+"), "| ZIPCODE + YEAR"))
+five_deg_temp_formula <- as.formula(paste("Total ~", paste(names(five_deg)[grepl("DAILY|DIURNAL", names(five_deg))], collapse="+"), "| ZIPCODE + YEAR"))
+seven_deg_temp_formula <- as.formula(paste("Total ~", paste(names(seven_deg)[grepl("DAILY|DIURNAL", names(seven_deg))], collapse="+"), "| ZIPCODE + YEAR"))
+nine_deg_temp_formula <- as.formula(paste("Total ~", paste(names(nine_deg)[grepl("DAILY|DIURNAL", names(nine_deg))], collapse="+"), "| ZIPCODE + YEAR"))
+twelve_deg_temp_formula <- as.formula(paste("Total ~", paste(names(twelve_deg)[grepl("DAILY|DIURNAL", names(twelve_deg))], collapse="+"), "| ZIPCODE + YEAR"))
+
+three_deg_temp <- felm(three_deg_temp_formula, data = three_deg)
+summary(three_deg_temp)
+five_deg_temp <- felm(five_deg_temp_formula, data = five_deg)
+summary(five_deg_temp)
+seven_deg_temp <- felm(seven_deg_temp_formula, data = seven_deg)
+summary(seven_deg_temp)
+nine_deg_temp <- felm(nine_deg_temp_formula, data = nine_deg)
+summary(nine_deg_temp)
+twelve_deg_temp <- felm(twelve_deg_temp_formula, data = twelve_deg)
+summary(twelve_deg_temp)
+
 all_temp <- felm(Total ~ DAILY_AVG_TEMP_Inf_5 + DAILY_AVG_TEMP_5_10 +
                     DAILY_AVG_TEMP_10_15 + DAILY_AVG_TEMP_15_20 +
                     DAILY_AVG_TEMP_20_25 + DAILY_AVG_TEMP_25_30 +
