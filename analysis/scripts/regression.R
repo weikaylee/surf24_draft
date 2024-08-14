@@ -98,57 +98,64 @@ get_age_names <- function(curr_names) {
   return(age_names)
 }
 
-merge_no_var_cols <- function(binned_df) { # binned_df should be binned already 
+merge_no_var_cols <- function(binned_df) {
+  # get and store idxs of interval of cols with 0 variance (aka all vals are same) 
+  idxs <- c()
   i <- 1
-  first_merge <- TRUE
-  while (i <= ncol(binned_df)) {
-    sd_col <- sd(binned_df[[i]])
-    if (sd_col == 0) {
-      if (i == 1 | first_merge) {
-        # merge curr col with next col 
-        new_col <- binned_df[[i]] + binned_df[[i + 1]]
-        old_col_name_1 <- names(binned_df)[i]
-        old_col_name_2 <- names(binned_df)[i + 1]
-        prefix <- str_extract(old_col_name_1, ".*(?=_[^_]*_[^_]*$)") # get everything before second to last underscore (the nums)
-        
-        first_num <- str_extract(old_col_name_1, "(?<=_)[^_]*(?=_[^_]*$)")
-        second_num <-  str_extract(old_col_name_2, "(?<=_)[^_]+$")
-        new_col_name <- paste(prefix, first_num, second_num, sep="_")
-        
-        # replace curr col
-        binned_df[[i]] <- new_col
-        colnames(binned_df)[i] <- new_col_name
-        
-        # remove next col
-        binned_df <- binned_df[-(i + 1)]
-        
-        # switch off first_merge
-        first_merge <- FALSE
+  j <- i
+  num_cols <- ncol(binned_df)
+  
+  while (j <= num_cols) {
+    if (sd(binned_df[[j]]) == 0) {
+      k <- j + 1
+      while (k <= num_cols && sd(binned_df[[k]]) == 0) {
+        k <- k + 1
       }
-      else {
-        # merge prev col with curr col
-        new_col <- binned_df[[i - 1]] + binned_df[[i]]
-        old_col_name_1 <- names(binned_df)[i - 1]
-        old_col_name_2 <- names(binned_df)[i]
-        prefix <- str_extract(old_col_name_1, ".*(?=_[^_]*_[^_]*$)") # get everything before second to last underscore (the nums)
-        
-        first_num <- str_extract(old_col_name_1, "(?<=_)([^_]*)_[^_]*$")
-        second_num <-  str_extract(old_col_name_2, "(?<=_)[^_]+$")
-        new_col_name <- paste(prefix, first_num, second_num, sep="_")
-        
-        # replace curr col
-        binned_df[[i]] <- new_col
-        colnames(binned_df)[i] <- new_col_name
-        
-        # remove prev col
-        binned_df <- binned_df[-(i - 1)]
-      }
+      idxs[[i]] <- c(j:(k - 1))
+      i <- i + 1
+      j <- k
     }
-    i <- i + 1
+    j <- j + 1
   }
+  
+  # merge cols using idxs (intervals of cols that need merging)
+  for (i in 1:length(idxs)) {
+    # merge interval with the col either before interval or after interval
+    first_idx <- idxs[[i]][1]
+    second_idx <- idxs[[i]][length(idxs[[i]])]
+    
+    if (first_idx == 1) {
+      second_idx <- second_idx + 1
+      idxs[[i]] <- append(idxs[[i]], second_idx) %>% sort
+    }
+    else {
+      first_idx <- first_idx - 1
+      idxs[[i]] <- append(idxs[[i]], first_idx) %>% sort
+    }
+    
+    old_col_name_1 <- names(binned_df)[first_idx]
+    old_col_name_2 <- names(binned_df)[second_idx]
+    
+    # get str before second-to-last underscore
+    prefix <- str_extract(old_col_name_1, ".*(?=_[^_]*_[^_]*$)") 
+    # get str between second-to-last and last underscore
+    first_num <- str_extract(old_col_name_1, "(?<=_)[^_]*(?=_[^_]*$)")
+    # get str after last underscore
+    second_num <-  str_extract(old_col_name_2, "(?<=_)[^_]+$")
+    
+    new_col_name <- paste(prefix, first_num, second_num, sep="_")
+    new_col <- rowSums(binned_df[first_idx:second_idx])
+    
+    binned_df[new_col_name] <- new_col
+  }
+  
+  # drop cols, reorder 
+  binned_df <- binned_df[, -unlist(idxs)]
+  reorderd_names <- names(binned_df)[names(binned_df) %>% str_extract("\\d+") %>% as.numeric %>% order]
+  binned_df <- binned_df[, reordered_names]
+
   return(binned_df)
 }
-
 
 # func to generate grid of plots for all bins
 # TODO, abstract more by including argument of cols that u want as output for model! 
