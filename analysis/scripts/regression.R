@@ -7,6 +7,9 @@ library(ggrepel)
 library(fixest)
 library(corrplot)
 library(dplyr)
+library(ggpubr)
+library(patchwork)
+
 
 # get panel data (just annual measures + mortality for now) 
 panel_path <- file.path("analysis", "processed", "merged", "measures_mortality.csv")
@@ -19,12 +22,12 @@ get_correlation_matrix <- function(df, title) {
   names(df) <- get_bin_names(names(df))
   corrplot(cor(df), method="color", tl.cex=0.5, main=title, mar=c(2, 2, 2, 2)) # tl.cex makes text smaller 
 }
-
-get_correlation_matrix(panel[grepl("AVG", names(panel))], "Avg one-deg temp bins")
-get_correlation_matrix(panel[grepl("MIN", names(panel))], "Min one-deg temp bins")
-get_correlation_matrix(panel[grepl("MAX", names(panel))], "Max one-deg temp bins")
-get_correlation_matrix(panel[grepl("DIURNAL", names(panel))], "Diurnal one-deg temp bins")
-
+# 
+# get_correlation_matrix(panel[grepl("AVG", names(panel))], "Avg one-deg temp bins")
+# get_correlation_matrix(panel[grepl("MIN", names(panel))], "Min one-deg temp bins")
+# get_correlation_matrix(panel[grepl("MAX", names(panel))], "Max one-deg temp bins")
+# get_correlation_matrix(panel[grepl("DIURNAL", names(panel))], "Diurnal one-deg temp bins")
+# 
 
 # create df with num_degrees degree bins 
 get_binned_df <- function(num_degrees, df_full) {
@@ -126,7 +129,7 @@ merge_no_var_cols <- function(binned_df) {
   consec <- c(0, cumsum(diff(zero_sd) > 1))
   idxs <- split(zero_sd, consec)
   
-  if (length(idxs) != 1) {
+  if (length(zero_sd) != 0) {
     # merge cols using idxs
     for (i in 1:length(idxs)) {
       # merge interval with the col either before interval or after interval
@@ -246,11 +249,11 @@ get_bin_graphs <- function(df, bins, deg, ref, response) {
 }
 
 # run some models
-bins <- c("AVG", "MIN", "MAX", "DIURNAL")
-three <- get_bin_graphs(panel, bins, 3, 12, "Total")
-four <- get_bin_graphs(panel, bins, 4, 12, "Total")
-five <- get_bin_graphs(panel, bins, 5, 12, "Total")
-seven <- get_bin_graphs(panel, bins, 7, 12, "Total")
+# bins <- c("AVG", "MIN", "MAX", "DIURNAL")
+# three <- get_bin_graphs(panel, bins, 3, 12, "Total")
+# four <- get_bin_graphs(panel, bins, 4, 12, "Total")
+# five <- get_bin_graphs(panel, bins, 5, 12, "Total")
+# seven <- get_bin_graphs(panel, bins, 7, 12, "Total")
 
 
 #' Get all-cause heatwave graph 
@@ -284,7 +287,7 @@ get_heatwave_graph <- function(df, response) {
   return(summary(heatwave))
 }
 
-heatwave <- get_heatwave_graph(panel, "Total")
+# heatwave <- get_heatwave_graph(panel, "Total")
 
 #' Get age-stratified mortaltiy rates vs bins 
 #' @param df Panel data dataframe
@@ -292,7 +295,8 @@ heatwave <- get_heatwave_graph(panel, "Total")
 #' @param bins Vector of bin "types" (avg, min, max, diurnal)
 get_age_stratified_graphs <- function(df, deg, bins, ref) {
   # group bins based on deg 
-  binned_df <- get_binned_df(deg, df) 
+  binned_df <- get_binned_df(deg, df)
+  processed_binned_df <- merge_no_var_cols(binned_df)
   
   # get formulas and eqns for each age group, for each bin
   grids <- list()
@@ -300,21 +304,19 @@ get_age_stratified_graphs <- function(df, deg, bins, ref) {
   for (i in 1:length(bins)) {
     # omit ref  
     bin <- bins[i]
-    bin_df <- binned_df[grepl(bin, names(binned_df))] %>% merge_no_var_cols
+    bin_df <- processed_binned_df[grepl(bin, names(processed_binned_df))]
     filtered_bin_names <- omit_bin(bin_df, bin, ref) 
-    # TODO check that filtered bin names is working right urmmmm
 
     # get col names (for bins) 
     bin_names <- get_bin_names(filtered_bin_names)
-    age_names <- get_age_names(names(binned_df)[grepl("Age", names(binned_df))])
-    actual_age_names <- names(binned_df)[grepl("Age", names(binned_df))]
-    
+    age_names <- get_age_names(names(processed_binned_df)[grepl("Age", names(processed_binned_df))])
+    actual_age_names <- names(processed_binned_df)[grepl("Age", names(processed_binned_df))]
     
     plt_df <- data.frame()
     for (j in 1:length(age_names)) {
       # get formula, eqn 
       age_formula <- as.formula(paste(actual_age_names[j], "~", paste(filtered_bin_names, collapse="+"), "| ZIPCODE + YEAR"))
-      age_eqn <- felm(age_formula, data=binned_df)
+      age_eqn <- felm(age_formula, data=processed_binned_df)
       eqns[[paste(bin, actual_age_names[j])]] <- summary(age_eqn)
       
       # add to df 
@@ -342,7 +344,8 @@ get_age_stratified_graphs <- function(df, deg, bins, ref) {
     grids[[i]] <- plt
   }
   
-  do.call("grid.arrange", grids)
+  # return(grids)
+  ggarrange(plotlist=grids, common.legend=TRUE, legend="bottom")
   return(eqns)
 }
 
@@ -387,19 +390,14 @@ get_age_stratified_heatwave_graph <- function(df) {
   grid.arrange(plt)
   return(summaries)
 }
-
-bins <- c("AVG", "MIN", "MAX", "DIURNAL")
-heat <- get_age_stratified_heatwave_graph(panel) 
-age_graphs <- get_age_stratified_graphs(panel, 5, bins, 12)
+# 
+# bins <- c("AVG", "MIN", "MAX", "DIURNAL")
+# heat <- get_age_stratified_heatwave_graph(panel) 
+# age_graphs <- get_age_stratified_graphs(panel, 5, bins, 12)
 
 #' Get all-age cause-specific graphs for avg temp  
-#' bins should be a list mapping og name to wanted name (avg -> average)
 get_cause_specific_graphs <- function(df, bins, deg, ref) {
-  # iterate through names of causes, which will serve as response var
-  
   binned_df <- get_binned_df(deg, df) %>% merge_no_var_cols
-  
-  # omit reference 
 
   # get relevant cols 
   not_cause_df <- binned_df[grepl("DAILY|DIURNAL|Age|HEATWAVE|YEAR|ZIPCODE", names(binned_df))]
@@ -407,89 +405,113 @@ get_cause_specific_graphs <- function(df, bins, deg, ref) {
   cause_names_unordered <- names(cause_df)
   cause_names <- cause_names_unordered[order(cause_names_unordered)]
   
-  
   summaries <- list()
-  grids <- list()
-  for (i in 1:length(cause_names)) {
-    cause <- cause_names[[i]]
-    cause_df <- data.frame()
-    bin_summaries <- list()
-    for (bin in names(bins)) {
-      bin_df <- binned_df[grepl(bin, names(binned_df))]
-      bin_names <- get_bin_names(names(bin_df))
-      
+  for (bin in bins) {
+    bin_df <- binned_df[grepl(bin, names(binned_df))]
+    
+    # omit reference 
+    filtered_bin_names <- omit_bin(bin_df, bin, ref) 
+    formatted_bin_names <- get_bin_names(filtered_bin_names)
+    
+    grids <- list()
+    cause_summaries <- list()
+    for (i in 1:length(cause_names)) {
+      cause <- cause_names[[i]]
       # get eqn and dfs 
-      eqn <- as.formula(paste(cause, "~", paste(names(bin_df), collapse="+"), "| ZIPCODE + YEAR"))
+      eqn <- as.formula(paste(cause, "~", paste(filtered_bin_names, collapse="+"), "| ZIPCODE + YEAR"))
       reg <- felm(eqn, data=binned_df)
       
-      plt_df <- data.frame(bin=bin_names, coeff=reg$coefficients[, 1], se=reg$se, bin_type=bins[[bin]]) %>% na.omit
+      plt_df <- data.frame(bin=formatted_bin_names, coeff=reg$coefficients[, 1], se=reg$se, 
+                           pval=format(round(reg$pval, digits=2), nsmall=2)) %>% na.omit
       plt_df$bin <- factor(plt_df$bin, levels=plt_df$bin)
       
-      bin_summaries[[bin]] <- summary(reg)
-      cause_df <- rbind(cause_df, plt_df)
+      plt_title <- cause
+      # plt_x <- paste0("Daily ", tolower(bin), " ", deg, "-degree temp bins")
+      # plt_y <- "Change in annual mortality\nrate per additional day"
+      # 
+      plt <- ggplot(plt_df, aes(x=bin, y=coeff, group=1)) + 
+        geom_ribbon(aes(ymin = coeff - se, ymax = coeff + se), fill="grey") + 
+        geom_errorbar(aes(ymin=coeff-se, ymax=coeff+se), width=.1) + 
+        geom_line() + 
+        geom_point(shape=21, fill="white") +
+        labs(title=plt_title, x=NULL, y=NULL) +
+        theme(text=element_text(size=9), plot.title=element_text(hjust=0.5)) + 
+        geom_text_repel(aes(label=pval), size=3)
+      
+      grids[[i]] <- plt
+      cause_summaries[[cause]] <- summary(reg)
     }
-    summaries[[cause]] <- bin_summaries
+    summaries[[bin]] <- cause_summaries
+    # do.call("grid.arrange", grids)
     
-    # create plot contianing data for all bins 
-    plt_title <- cause
-    plt_x <- paste0("Daily ", deg, "-degree temp bins")
+    plt_x <- paste0("Daily ", tolower(bin), " ", deg, "-degree temp bins")
     plt_y <- "Change in annual mortality\nrate per additional day"
     
-    plt <- ggplot(cause_df, aes(x=bin, y=coeff, group=bin_type)) + 
-      geom_ribbon(aes(ymin = coeff - se, ymax = coeff + se, fill=bin_type), alpha=0.3) + 
-      geom_errorbar(aes(ymin=coeff-se, ymax=coeff+se, color=bin_type), show.legend=FALSE, width=.1) + 
-      geom_line(aes(color=bin_type), show.legend=FALSE) + 
-      geom_point(aes(color=bin_type), show.legend=FALSE) +
-      labs(title=plt_title, x=plt_x, y=plt_y) +
-      theme(text=element_text(size=9), plot.title=element_text(hjust=0.5)) +
-      scale_fill_discrete(name="Daily temp bins") 
+    grid.arrange(grobs=grids, left=plt_y, bottom=plt_x)
     
-    grids[[i]] <- plt
   }
-  
-  do.call("grid.arrange", grids)
   return(summaries)
 }
 
-bins_dict <- list(
-  "AVG" = "Average",
-  "MIN" = "Minimum",
-  "MAX" = "Maximum", 
-  "DIURNAL" = "Diurnal"
-)
-store <- get_cause_specific_graphs(panel, bins_dict, 5)
+get_cause_specific_heatwave <- function(df) {
+  # get relevant cols 
+  not_cause_df <- df[grepl("DAILY|DIURNAL|Age|HEATWAVE|YEAR|ZIPCODE", names(df))]
+  cause_df <- df[!names(df) %in% names(not_cause_df)]
+  cause_names_unordered <- names(cause_df)
+  cause_names <- cause_names_unordered[order(cause_names_unordered)]
+  
+  grids <- list()
+  summaries <- list()
+  for (i in 1:length(cause_names)) {
+    cause <- cause_names[[i]]
+    # get eqn and dfs 
+    eqn <- as.formula(paste(cause, "~", "HEATWAVE_CNT + I(HEATWAVE_CNT^2) + I(HEATWAVE_CNT^3) | ZIPCODE + YEAR"))
+    reg <- felm(eqn, data=df)
+    
+    plt_df <- data.frame(x=df[, "HEATWAVE_CNT"], y=df[, cause])
+    
+    # get data from predicted polynomial
+    x_vals <- seq(0, max(plt_df$x), by=0.5)
+    predict_vals <- function(x) {
+      as.numeric(reg$coefficients[1])*x +
+        as.numeric(reg$coefficients[2])*x^2 +
+        as.numeric(reg$coefficients[3])*x^3
+    }
+    y_vals <- predict_vals(x_vals)
+    line_data <- data.frame(x=x_vals, y=y_vals) 
+    
+    # get plot 
+    plt <- ggplot(plt_df, mapping=aes(x=x, y=y)) +
+      geom_point() +
+      geom_line(line_data, mapping=aes(x, y)) +
+      labs(title=cause, x=NULL, y =NULL) +
+      theme(plot.title=element_text(hjust=0.5))
+    
+    grids[[i]] <- plt
+    summaries[[cause]] <- summary(reg)
+  }
+    
+  grid.arrange(grobs=grids, left="Mortality rate", bottom="Heatwave day counts")
+  return(summaries)
+}
 
+# cause_graphs <- get_cause_specific_graphs(panel, bins, 5, 12)
+# cause_heatwave <- get_cause_specific_heatwave(panel)
 
+get_bin_heatwave_graphs <- function(df, bins, deg, ref) {
+  # group by deg 
+  binned_df <- get_binned_df(deg, df) %>% merge_no_var_cols
+  summaries <- list()
+  for (bin in bins) {
+    # get corresponding bins, and omit 
+    bin_df <- binned_df[grepl(bin, names(binned_df))]
+    filtered_bin_names <- omit_bin(bin_df, bin, ref)
+    
+    eqn <- as.formula(paste("Total ~", paste(filtered_bin_names, collapse="+"), "+ HEATWAVE_CNT + I(HEATWAVE_CNT^2) + I(HEATWAVE_CNT^3) | ZIPCODE + YEAR"))
+    reg <- felm(eqn, data=binned_df)
+    summaries[[bin]] <- summary(reg)
+  }
+  return(summaries)
+}
 
-# iterate through each col, and get formula (plot all bins on one) 
-# for (cause in names(cause_df)) {
-#   # get formula and eqn
-#   cause_formula <- as.formula(cause, "~", paste(names(binned_df)[grepl(bin, names(binned_df))], collapse="+"), "| ZIPCODE + YEAR"))
-#   age_eqn <- felm(age_formula, data=binned_df)
-#   eqns[[paste(bin, actual_age_names[j])]] <- summary(age_eqn)
-#   
-#   # add to df 
-#   age_df <- data.frame(bin=bin_names, coeff=age_eqn$beta[, 1], se=age_eqn$se, 
-#                        pval=format(round(age_eqn$pval, digits=2), nsmall=2),
-#                        age_group=age_names[j]) %>% na.omit
-#   age_df$bin <- factor(age_df$bin, levels=age_df$bin)
-#   plt_df <- rbind(plt_df, age_df)
-#   
-#   # get df 
-#   
-#   # get plot, and append to grid  
-# }
-
-# plot grid of plots
-
-
-# after dinner, work with cause speicfic mrotaltiy! and then try er data, and then try to choose best model 
-# (can also clean up first get_graphs func) 
-
-# TODO try messing around with additional columns -- age? cause-sepcific mrotality? can see relationship used in paper
-# TODO try incorporating er data (the ones u have rn?) 
-# TODO choose a num degrees temp bin and which bin to use! and then plot with heatwaves! 
-# (maybe try with all of them hmmm, and then compareee)
-# TODO incorporate itneractions w pca scoreee 
-# TODO check otu presentation and final paper guh... 
-# 
+# store <- get_bin_heatwave_graphs(panel, bins, 5, 12)
