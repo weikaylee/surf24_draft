@@ -42,9 +42,18 @@ Daily one-degree temperature bins for each year from 2003 to 2020 were collected
 
 #### Socio-dempographic data 
 
-We curated a dataset of zipcode-level socio-demographic variables using the American Community Survey’s (ACS) 2022 five-year estimates to compute social vulnerability scores. These variables includes counts encompassing living conditions, social isolation, age, race, health, education, and transportation barriers, all of which have been found to impact responses to extreme temperatures. Additional information is reported in ```data\pca\README.md```.
+Socio-demographic data was extracted from the American Community Survey's (ACS) 2022 five-year estimates. Variables were selected after an extensive literature review conducted by [Shreevastava et al.](https://agu.confex.com/agu/fm23/meetingapp.cgi/Paper/1415540), and include counts encompassing living conditions, social isolation, age, race, health, education, and transportation barriers, all of which have been found to impact responses to extreme temperatures. The table below indicates the ACS tables used to curate a zipcode-level socio-demographic dataset, where the description column explains the purpose of the columns extracted from each ACS table. As seen in ```data\pca```, each table CSV file except for the B25040 table additionally corresponds to two additional files, one that describes the column metadata and one that describes the data collection. 
 
-TODO move the other readme stuff here?
+| Table ID | Description                                                                                                                                                                                          |
+|----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| B25040   | Population using solar energy for house heating fuel.                                                                                                                                                |
+| DP02     | Foreign born population                                                                                                                                                                              |
+| DP03     | Unemployed population and population of outdoor workers  (workers in natural resource, construction, maintenance,  production, transportation, and material moving occupations)                      |
+| DO05     | Total zipcode, race (white, Black, Asian, Native American, and Hispanic or Latino), elderly (those aged 65 and older), and children (those under 18) populations                                     |
+| S1101    | Renting, live alone, and both live alone and elderly (those aged 65 and older) populations                                                                                                           |
+| S1501    | Less than high school education and maximum high school education populations                                                                                                                        |
+| S1701    | Population living in extreme population, or those whose income is below  50% of their poverty level.                                                                                                 |
+| S2501    | Population living with many occupants and population living in overcrowded conditions, defined by the California Department of Housing and Community Development as more than 1.01 people per room.  |
 
 #### Health data 
 
