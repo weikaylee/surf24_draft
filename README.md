@@ -9,7 +9,11 @@ Mentor: Hannah Druckenmiller
 Since the Industrial Revolution, Earth’s global climate has warmed to unprecedented levels, driven largely and unequivocally by anthropogenic activities. This warming has led to wide-ranging consequences, including increased extreme weather events and poorer public health. Extreme heat in particular has become a key concern, due to its large role in public health as well as its prevalence in urban areas due to the urban heat island effect, in which the built environment elevates local temperatures. However, while the temperature increases associated with urban heat islands are comparable to those projected by end-of-century climate change scenarios, the impacts of urban heat have received relatively less attention from the public and policymakers. We aim to address this gap by estimating the human health effects of urban heat on mortality and morbidity across LA county at the zipcode level. We gather social vulnerability scores using socio-demographic data and incorporate measures of prolonged heat exposure derived from high-resolution, near-surface air temperature data into fixed effects and polynomial regression models. Our findings are generally consistent with past work in the literature and reveal that our measures and models may be applicable for informing mitigation measures at the local level. 
 
 ## Repository overview 
-This repository contains the data, code, and results for estimating the health effects of urban heat in LA county. To replicate the analysis, start by cloning this repository, removing the processed and figures folders, and then running the ```run.r``` script. The sections below describe the requirements necessary for executing the analysis and the datasets used. The diagram below illustrates the struuctre of the repository. 
+This repository contains the data, code, and results for estimating the health effects of urban heat in LA county. To replicate the analysis, start by cloning this repository, removing the processed and figures folders, and then running the ```run.r``` script. 
+
+_Be sure to follow the instructions in the ```run.r``` script (i.e., when to run the Jupyter notebooks)._ 
+
+The sections below describe the requirements necessary for executing the analysis and the datasets used. For more information, refer to ```report.pdf```. The diagram below illustrates the structre of the repository. 
 
 ```
 surf24                                # Project folder
@@ -17,13 +21,24 @@ surf24                                # Project folder
 ├── processed                         #   Intermediate data
 ├── figures                           #   Output files (png figures)
 ├── scripts                           #   Code
-|   ├── 1_import_data.do              #     TODO update
-|   ├── 2_clean_data.do
-|   ├── 3_combine_data.do
-|   ├── 4_analysis.do
-|   ├── 5_supporting_analysis.do
-|   └── 6_tables.do
-└── run.r                             #   Master script
+|   ├── 00-get_avg_temps.R            #      Process LA county-level data
+|   ├── ...
+|   ├── 06-max_temp_diurnal_rng_bins.R
+|   ├── 07-clean_zipcode_data.R       #      Collapse measures to the zipcode level     
+|   ├── ...
+|   ├── 09-collapse_measures.R
+|   ├── 10-er_health_data.ipynb       #      Process mortality, morbidity health data
+|   ├── ...
+|   ├── 13-catchment_mortality.R
+|   ├── 14-zipcode_pca_data.ipynb     #      Prepare data for PCA analysis
+|   ├── 15-zipcode_pca.ipynb          #      Perform PCA analysis
+|   ├── 16-merge_data.ipynb           #      Compile data into panel data for regression
+|   ├── 17-regression_funcs.R         #      Run regression, get figures
+|   ├── ...
+|   ├── 19-mortality_regression.R
+|   ├── process_data.py               #      Class to extract data from CSVs for PCA
+|   └── run.R                         #      Master script
+└── report.pdf                        #      Final SURF paper              
 ```
 
 ## Requirements
